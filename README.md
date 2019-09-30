@@ -1,5 +1,5 @@
 ## PyTango workshop
 
-A presentation for the PyTango workshop at ICALEPCS 2017.
+A presentation for the PyTango & Fandango workshop at ICALEPCS 2019.
 
-[Sildes](http://vxgmichel.github.io/icalepcs-workshop)
+[Sildes](http://ajoubertza.github.io/icalepcs-workshop)

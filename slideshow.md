@@ -5,18 +5,36 @@ layout: true
 name: title
 class: center, middle
 
-PyTango Workshop
-================
+PyTango and Fandango Workshop
+=============================
 
-[Tiago Coutinho](https://github.com/tiagocoutinho) - [Vincent Michel](https://github.com/vxgmichel)
+[Anton Joubert](https://github.com/ajoubertza) - [Sergi Rubio Manrique](https://github.com/sergirubio)
 
-ICALEPCS 2017 - Barcelona
+ICALEPCS 2019 - New York
 
 *
 
-GitHub: [vxgmichel/icalepcs-workshop](https://github.com/vxgmichel/icalepcs-workshop)
+GitHub: [ajoubertza/icalepcs-workshop](https://github.com/ajoubertza/icalepcs-workshop)
 
-Slides: [tinyurl.com/icalepcs-rp](http://tinyurl.com/icalepcs-workshop)
+Slides: [https://ajoubertza.github.io/icalepcs-workshop](https://ajoubertza.github.io/icalepcs-workshop)
+
+---
+name: acknowledgements
+layout: true
+class: middle
+
+Acknowledgements
+================
+
+---
+
+Much of the content of this presentation is from work by:
+
+* [Vincent Michel](https://github.com/vxgmichel)
+* [Tiago Coutinho](https://github.com/tiagocoutinho)
+* [Antoine Dupré](https://github.com/AntoineDupre)
+
+Thanks!
 
 ---
 name: presentation
@@ -38,7 +56,7 @@ What is PyTango?
 
 * Multi OS: Linux, Windows, Mac
 
-* Works on python 2.7 .. 3.6
+* Works on python 2.7 .. 3.7
 
 ---
 
@@ -48,9 +66,9 @@ What is PyTango?
 
 * asyncio and gevent event loop
 
-* ITango (now a separate project)
+* ITango (a separate project)
 
-* alternative TANGO Database server (sqlite, redis backends)
+* ?? alternative TANGO Database server (sqlite, redis backends) ??
 
 ---
 
@@ -71,7 +89,9 @@ What's on the menu?
 
 * Testing our servers without a database
 
-* A dive into Jupyter notebooks
+* New features being considered
+
+* Fandango - the Swiss army knife
 
 ---
 
@@ -220,7 +240,7 @@ name: Server
 layout: true
 class: middle
 
-Uau! Writing device servers has never been so easy!
+Wow! Writing device servers has never been so easy!
 ------------------
 
 ---
@@ -309,174 +329,31 @@ In [5]: eid = d.subscribe_event('random', tango.EventType.CHANGE_EVENT, cb)
 ... [ATTR_VALID] 0.9369674083770559
 ```
 
-
 ---
 class: middle
 
-# A dive into Jupyter
+Unit testing
+------------
 
-```bash
-# Install Jupyter
-$ conda install jupyter
-[...]
+```python
+from tango import DevState
+from tango.test_utils import DeviceTestContext
 
-# Make sure the itango jupyter kernel is installed
-$ itango
-[...]
+from powersupply.powersupply import PowerSupply
 
-# Enjoy!
-$ jupyter notebook
-[...]
+
+def test_init():
+    """Test device goes into STANDBY when initialised"""
+    with DeviceTestContext(PowerSupply) as proxy:
+        proxy.Init()
+        assert proxy.state() == DevState.STANDBY
 ```
 
-.center[![Jupyter](images/jupyter.jpg)]
-
----
-
-class: middle, center
-
-# Lunch break!
-
----
-class: middle, center
-
-# Concurrency in Pytango
-
-
-[Tiago Coutinho](https://github.com/tiagocoutinho) - [Vincent Michel](https://github.com/vxgmichel)
-
-ICALEPCS 2017 - Barcelona
-
-*
-
-GitHub: [vxgmichel/icalepcs-workshop](https://github.com/vxgmichel/icalepcs-workshop)
-
-Slides: [tinyurl.com/icalepcs-rp](http://tinyurl.com/icalepcs-workshop)
-
----
-class: middle
-
-Concurrency
-===========
-
-## First approach: **threading**
-
-- 1 listener + 1 thread per client
-
-- Cons: race conditions and thread overhead
-
-- Pros:  parallelization
-
-## Second approach: **asynchronous programming**
-
-- Single-threaded with a selector
-
-- Pros: support >10K clients
-
-- Cons: require specific libraries
-
----
-
-Concurrency
-===========
-
-## Third approach: **message passing**
-
-> Don't communicate by sharing memory; share memory by communicating.
-> (R. Pike)
-
-- See Erlang and Go
-
-- Not incompatible with the previous two approaches.
-
-
-## Warning
-
-**⚠** Concurrency **IS NOT** parralellism
-
----
-class: middle
-
-What about tango?
-=================
-
-## cppTango
-
-- **threading**: a tango server is at least 8 threads
-
-## pytango
-
-- **threading** since it's a binding to cppTango
-
-- **asynchronous programming** is also supported
-
-  * For both client and server interfaces
-
-  * Through **Gevent** or **Asyncio**
-
----
-class: middle
-
-What's wrong with threading?
-============================
-
-- We have a problem!
-
-- Let's add a thread...
-
-No**•**w  we ha**2**ve prob**!**lems
-
-## How does tango solve it?
-
-- All requests are serialized using a monitor lock
-
-- Useful trick: use a **polled update command**
-
----
-class: middle
-
-Asynchronous programming in python
-==================================
-
-### Many frameworks:
-
-  * [Twisted](https://twistedmatrix.com/trac)
-
-  * [Gevent](http://www.gevent.org/)
-
-  * [Tornado](http://www.tornadoweb.org/en/stable/)
-
-  * [Asyncio](https://docs.python.org/3/library/asyncio.html)
-
-  * [Curio](https://curio.readthedocs.io/en/latest/)
-
-  * [Trio](https://trio.readthedocs.io/en/latest/)
-
----
-class: middle
-
-How does it work?
-=================
-
-- a **selector** monitors the file descriptors
-
-- a **loop** manages a callback queue
-
-- a **user interface** is provided:
-
-  * [Twisted](https://twistedmatrix.com/trac): **deferred** and **inline callbacks**
-
-  * [Gevent](http://www.gevent.org/): **asynchronous results** and **implicit coroutines**
-
-  * [Asyncio](https://docs.python.org/3/library/asyncio.html): **futures** and **explicit coroutines**
-
-  * [Curio](https://curio.readthedocs.io/en/latest/) and [Trio](https://trio.readthedocs.io/en/latest/): **explicit coroutines** only
-
-- concurrency is achieved using **execution units** (pseudo-threads):
-
-  - **greenlet** (gevent)
-
-  - **task** (asyncio, curio, trio)
+`DeviceTestContext` launches tango device server in a subprocess,
+and returns a `DeviceProxy` instance connected to it.
+
+"Sort-of" unit testing - can test from client's perspective, but
+cannot access device's methods or attributes directly.
 
 ---
 class: middle
@@ -597,402 +474,79 @@ More resources
 
 ### Previous pytango workshop
 
-- Slides: [antoinedupre.github.io/pytango-workshop](https://antoinedupre.github.io/pytango-workshop)
+ICALECPS 2017
+- Slides: [vxgmichel.github.io/icalepcs-workshop](https://vxgmichel.github.io/icalepcs-workshop)
 
-- Repo: [github.com/AntoineDupre/pytango-workshop](https://github.com/AntoineDupre/pytango-workshop)
-
-
-
-
-
-
+- Repo: [github.com/vxgmichel/icalepcs-workshop](https://github.com/vxgmichel/icalepcs-workshop)
 
 ---
-name: none
-class: middle, center
-layout: true
+class: middle
+## New features being considered
 
----
-
-# The next slides are from the previous workshop at SOLARIS
-
----
-
-name: PyTango History
-layout: true
-
-PyTango History
-=========
-
----
-
-Started at SOLEIL.
-
-2005 - Moved to ALBA. M. Taurel develops server.
-
-2006 - T. Coutinho main contributor.
-
-2012 - A new API for device servers.
-
-2013 - Project moves with Tiago to the ESRF.
-
-2015 - MaxIV joins the game.
-
-2016 - PyTango 9 is realeased.
-
-2017 - Welcome to Solaris.
-
----
-
-name: Current Status
-layout: true
-
-Current Status
-===========
----
-
-- github.com/tango-controls/pytango
-
-- 886 commits
-
-- 11 releases
-
-- 26 contributors
-
-- latest release: v9.2.2
-
-
----
-name: Contributing to PyTango
-layout: true
-
-Contributing to PyTango
-======
-
----
-
-Git workflow
-------
-
- * Github issues
-
- * Pull request
-
- * PR merged in develop branch  (reviewed and approved)
-
- * develop  branch merged into master at each release
-
- * develop branch as default branch in github
-
----
-
-Unit-testing
----------
-
- * Based on Pytest
-
- * Continious integration:
-
-    - TravisCI is running tests in a conda environment
-
-    - for python2.7, python3.5, python3.6
-
- * 606 tests:
-
-    - client tests
-
-    - server tests
-
-    - event tests
-
----
-
-Testing
--------
-
-Useful test context, introduced in 9.2.1:
+* Python logging as standard sends to TANGO Logging Service
 
 ```python
-from tango.test_utils import DeviceTestContext
-
-with DeviceTestContext(SomeDevice) as proxy:
-    assert proxy.state() == DevState.ON
-```
-
-Or:
-
-```console
-$ python -m tango.test_context some_module.SomeDevice --debug=3
-Ready to accept request
-SomeDevice started on port 8888 with properties {}
-Device access: tango://hostname:8888/test/nodb/somemodule#dbase=no
-Server access: tango://hostname:8888/dserver/Empty/somemodule#dbase=no
-```
-
----
-
-Documentation
----------
-
- * Documentation is generated from the sources.
-
- * The documentation is now hosted on readthedocs. (PyTango version >= 9.)
-
- * Only works with >= python3.5 (because of the _tango module patch)
-
----
-
-Coding standards
----------
-
- * Flake8
-
-   - PEP8
-
-   - PyFlake
-
- * There are plugins for most IDEs !
-
----
-
-Progress
---------
-
- * Got rid of metaclass definition
-
- * ITango moved to a different project
-
- * Rename PyTango module to tango
-
- * Refactoring (asynchronous layer, etc.)
-
- * Cleaning repo
-
-
----
-
-Example
--------
-
-Device servers with pytango >=9.2.1
-
-```python
-from time import sleep
-from tango.server import Device, attribute, command
 
 class PowerSupply(Device):
 
-    @attribute(dtype=float)
-    def voltage(self):
-        return 1.23
-
     @command
     def calibrate(self):
+        self._logger.info('Calibrating...')
         sleep(0.1)
 
-if __name__ == '__main__':
-    PowerSupply.run_server()
 ```
 
----
-name: Pending issues and future work.
-layout: true
-
-Pending issues and future work
-============
----
-
-
-Pending issues
-------
-
-
- * Pytango server restart segfault
-
- * Deprecated NumPy API warnings
-
- * Compilation warnings related to zero message queue.
+* User could add handlers for other targets, e.g., syslog or Elastic
 
 ---
+class: middle
 
-Tango9 missing features
----------
+New features being considered
+-----------------------------
 
+* Support forwarded attributes with `DeviceTestContext`
 
- * Pipe events (WIP)
-
- * Pipe write (client & server, WIP)
-
- * Dynamic commands
-
- * Forwarded attributes API
-
- * Device interface change event
-
- * Fill polling cache from the code ?
-
----
-
-Improvements 1/2
------
-
-
- * Unit tests (always!)
-
- * Continius integration:
-
-    - Official Conda Tango channel
-
-    - Conda package build by travis
-
-    - Windows build
-
- * Change of binding (hard one --')
-
- * Server argparse (easy one!)
-
----
-
-Improvements 2/2
------
-
-
- * Clean python module (try tango.+TAB in IPython!)
-
- * Refactor tango objects
-
- * Documentation:
-
-    - Add documentation about the documentation generation and mock system
-
-    - Documentation need to be reviewed:
-
-        - Make documentation up to date
-
-        - Promote HL API as the default way of programming in Python
-
-        - Document and promote new features
-
-
----
-
-name: The MAX-IV approach to tango events.
-layout: true
-
-The MAX-IV approach to tango events
-============
----
-
- * Problem with archiving
-
- * Change events as default event stream
-
- * Facade device approach
-
- * Archive events as filtered events
-
----
-
-
-name: The facadedevice library.
-layout: true
-
-The facadedevice library.
-============
----
-
-[Facadedevice library](http://tango-facadedevice.readthedocs.io/en/latest/): A reactive event-based approach to high-level tango devices
-
----
-
-name: ITango
-layout: true
-
-ITango
-============
-
----
-
-### Features
-
-* IPython (jupyter) console
-
-* Direct access to tango classes
-
-* TANGO class sensitive device name auto-completion
-
-* Event monitor
-
-* Qt console
-
-* Notebook
-
-* User friendly error handling
-
----
-
-### Hands on
-
-``` bash
-(tango3) $ conda install jupyter matplotlib
-[...]
-(tango3) $ jupyter notebook
-```
-
-```ipython
-In [2]: tg_test = TangoTest("sys/tg_test/1")
-[...]
-
-```
-
----
-
-### Plan B:
-
-<a href="https://asciinema.org/a/0qfbv42rw496b942ny6lpdxrn">
-   <img src="https://asciinema.org/a/0qfbv42rw496b942ny6lpdxrn.png"
-   	style="display:block; margin:auto; width: 640px;"/>
-</a>
-
----
-
-name: threading with PyTango
-layout: true
-
-Threading with PyTango
-============
----
-
-"Adding a thread is adding at least one problem" V.Michel
-
-Monitor lock
-
-Alternative :
- * Tango Polling
- * Polled Update command
-
-
----
-
-name:  Green modes
-layout: true
-Green modes
-============
----
+* faketango `Device` for basic unit testing:
 
 ```python
-tango.GreenMode.Synchronous
-tango.GreenMode.Futures
-tango.GreenMode.Gevent
-tango.GreenMode.Asyncio
+import mock
+from tango import DevState
+from tango.test_utils import DeviceTestContext
+from tango.test_utils import faketango
+
+from powersupply.powersupply import PowerSupply
+
+@mock.patch('tango.server.Device', faketango.Device)
+def test_init():
+    """Test device goes into STANDBY when initialised"""
+    DUT = PowerSupply(properties={})
+    DUT.Init()
+    assert DUT.get_state() == DevState.STANDBY
 ```
 
 ---
-
-name: Asyncio in PyTango
+name: presentation
 layout: true
-Asyncio in PyTango
-============
+class: middle
+
+Fandango - the Swiss army knife
+===============================
+
+---
 ---
 
-Fill free to test it !
+What is Fandango?
+================
+
+* Python library...
+* ...
+
+---
+class: middle
+
+More about fandango...
+
+---
+
+
+---
