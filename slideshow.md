@@ -538,15 +538,41 @@ Fandango - the Swiss army knife
 What is Fandango?
 ================
 
-* Python library...
-* ...
+* fandango it's a Python library build on top of PyTango and DatabaseDS 
+and Starter Device Servers
+* Available at https://github.com/tango-controls/fandango and PyPi
+* It ported functionalities only available on Java clients (Jive, Astor)
+* Includes methods for functional programming
+* Provides several middle-layer devices (DynamicDS, SimulatorDS, CopyCatDS)
 
 ---
 class: middle
 
-More about fandango...
+fandango submodules
+-------------------
+
+* functional: functional programming, data format conversions, caseless regular expressions
+* tango : tango api helper methods, search/modify using regular expressions
+* dynamic : dynamic attributes, online python code evaluation
+* server : Astor-like python API
+* device : some templates for Tango device servers
+* interface: device server inheritance
+* db: MySQL access
+* dicts,arrays: advanced containers, sorted/caseless list/dictionaries, .csv parsing
+* log: logging
+* objects: object templates, singletones, structs
+* threads: serialized hardware access, multiprocessing
+* linos: accessing the operative system from device servers
+* web: html parsing
+* qt: some custom Qt classes, including worker-like threads.
+
 
 ---
+
+fandango.tango submodules
+-------------------------
+
+
 
 
 ---
