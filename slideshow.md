@@ -569,8 +569,24 @@ fandango submodules
 
 ---
 
+
 fandango.tango submodules
 -------------------------
+=======
+Deploying taurus-test docker
+----------------------------
+
+https://docs.docker.com/install/linux/docker-ce/debian/#install-using-the-repository
+ sudo apt-get install docker-ce docker-ce-cli containerd.io
+ sudo usermod -aG docker your-user
+ docker run -id --name=taurus-stretch -h taurus-test -e DISPLAY=$DISPLAY -e QT_X11_NO_MITSHM=1 -v /tmp/.X11-unix:/tmp/.X11-unix cpascual/taurus-test:debian-stretch
+ docker exec -it taurus-test bash
+ 
+root@taurus-test:~# fandango add_new_device Starter/$HOSTNAME Starter tango/admin/$HOSTNAME
+None
+root@taurus-test:~# fandango put_device_property tango/admin/$HOSTNAME StartDSPath $(fandango findModule fandango)/devices
+StartDSPath /root/fandango/devices
+root@taurus-test:~# /usr/lib/tango/Starter taurus-test &
 
 
 
