@@ -744,7 +744,7 @@ VACCA is an SCADA-like UI build on top of the Taurus (PyQt) library with the pur
 of managing all TANGO related services (Archiving, Alarms, TANGO Db, Hosts) from a single
 application.
 
-[image:vacca_tree.jpg]
+.center[![vacca](images/vacca_tree.png)]
 
 ---
 
