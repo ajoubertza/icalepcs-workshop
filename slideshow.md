@@ -529,24 +529,230 @@ name: presentation
 layout: true
 class: middle
 
-Fandango - the Swiss army knife
-===============================
+Fandango - a Swiss army knife for tango
+=======================================
 
----
 ---
 
 What is Fandango?
-================
+-----------------
 
-* Python library...
-* ...
+* fandango it's a Python library build on top of PyTango and DatabaseDS 
+and Starter Device Servers
+* Available at https://github.com/tango-controls/fandango and PyPi
+* It ported functionalities only available on Java clients (Jive, Astor)
+* Includes methods for functional programming
+* Provides several middle-layer devices (DynamicDS, SimulatorDS, CopyCatDS)
 
 ---
 class: middle
 
-More about fandango...
+fandango submodules
+-------------------
+
+* functional: functional programming, data format conversions, caseless regular expressions
+* tango : tango api helper methods, search/modify using regular expressions
+* dynamic : dynamic attributes, online python code evaluation
+* server : Astor-like python API
+* device : some templates for Tango device servers
+* interface: device server inheritance
+* db: MySQL access
+* dicts,arrays: advanced containers, sorted/caseless list/dictionaries, .csv parsing
+* log: logging
+* objects: object templates, singletones, structs
+* threads: serialized hardware access, multiprocessing
+* linos: accessing the operative system from device servers
+* web: html parsing
+* qt: some custom Qt classes, including worker-like threads.
+
 
 ---
 
 
+fandango.tango submodules
+-------------------------
+
+* command: asynchronous execution of tango commands on a background thread
+* eval/tangoeval: evaluation of formulas using tango attribute values
+* dynattr: dynamic typing of attributes, used to override operators on demand
+* export: import/export tango attributes/devices/properties on json/pickle formats
+* search: methods to search devices/attributes in the tango database or a running control system
+* methods: miscellaneous methods to access Tango devices and attributes
+
 ---
+
+fandango vs PyTango
+-------------------
+
+PyTango is a binding of TANGO C++, thus bringing the same functionality but an API that
+is not always pythonic.
+
+PyTango High Level API 
+fandango simplifies the PyTango Database API and adds some features only available using
+direct commands on the DatabaseDS device server, for consistency, it uses the same arguments 
+that would be used when adding a device using JIVE, the default TANGO UI, or Astor, the 
+default TANGO Manager.
+
+---
+
+fandango vs PyTango
+-------------------
+
+Adding a new device with PyTango (mimics the C++ API):
+```python
+dd_device(self, dev_info) -> None
+
+        Add a device to the database. The device name, server and class
+        are specified in the DbDevInfo structure
+
+        Example :
+            dev_info = DbDevInfo()
+            dev_info.name = 'my/own/device'
+            dev_info._class = 'MyDevice'
+            dev_info.server = 'MyServer/test'
+            db.add_device(dev_info)
+
+    Parameters :
+        - dev_info : (DbDevInfo) device information
+```
+
+---
+
+fandango vs PyTango
+-------------------
+
+Adding a new device with fandango (mimics the Jive UI form):
+
+```python
+fn.tango.add_new_device(server, klass, device)
+
+This methods mimics Jive UI forms:
+
+    server: ExecutableName/Instance
+    klass:  DeviceClass
+    device: domain/family/member
+    
+e.g.:
+    fandango.tango.add_new_device(
+      'MyServer/test','MyDevice','my/own/device')
+```
+---
+
+Creating and launching devices
+------------------------------
+
+fandango provides Astor python API, providing the same functionality than astor tool.
+
+fandango can be used in python:
+```python
+import fandango as fn
+
+fn.tango.add_new_device('DynamicDS/1','DynamicDS','test/dyn/1')
+astor = fn.Astor()
+host = fn.linos.MyMachine().hostname
+astor.start_servers('DynamicDS/1',host=host)
+astor.set_server_level('DynamicDS/1',level=3,host=host)
+```
+or from linux shell:
+```bash
+$: fandango add_new_device DynamicDS/1 DynamicDS test/dyn/1
+
+$: tango_servers $HOSTNAME start DynamicDS/1
+```
+
+---
+
+Searching devices in the database
+---------------------------------
+
+```python
+
+fandango.find_devices('bo01/vc/*')
+
+fandango.find_attributes('sr12*/*plc*')
+
+fandango.get_matching_device_properties('sr12/vc/eps-plc-01','dynamic*')
+
+```
+
+---
+
+Import/Export Device servers from TANGO Db
+------------------------------------------
+
+Exporting/Importing devices and properties declaration allows to easily
+create hundreds of devices with a few commands:
+
+```python
+```
+
+---
+
+SimulatorDS / TangoEval
+-----------------------
+
+Evaluating attribute values on runtime
+
+Declaring Dynamic Attributes on a simulator/composer/processor device:
+```python
+```
+
+Declaring a formula in the PANIC Alarm System (using fandango.TangoEval):
+```python
+```
+
+---
+
+Deploying taurus-test docker
+----------------------------
+
+Reproducing examples with taurus docker (also AWS available)
+
+```bash
+https://docs.docker.com/install/linux/docker-ce/debian/#install-using-the-repository
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+sudo usermod -aG docker your-user
+docker run -id --name=taurus-stretch -h taurus-test -e DISPLAY=$DISPLAY -e QT_X11_NO_MITSHM=1 -v /tmp/.X11-unix:/tmp/.X11-unix cpascual/taurus-test:debian-stretch
+docker exec -it taurus-test bash
+ 
+root@taurus-test:~# fandango add_new_device Starter/$HOSTNAME Starter tango/admin/$HOSTNAME
+None
+root@taurus-test:~# fandango put_device_property tango/admin/$HOSTNAME StartDSPath $(fandango findModule fandango)/devices
+StartDSPath /root/fandango/devices
+root@taurus-test:~# /usr/lib/tango/Starter taurus-test &
+```
+---
+
+Libraries/Projects using fandango
+---------------------------------
+
+* SimulatorDS Device Server
+* CopyCatDS, ComposerDS, PyStateComposer, PyAttributeProcessor, ...
+* PANIC Alarm System
+* PyTangoArchiving
+* PyPLC Device Server
+* VacuumController Device Servers (Varian, Agilent, MKS, Pfeiffer)
+* VACCA
+
+---
+
+Fandango and VACCA
+------------------
+
+VACCA is an SCADA-like UI build on top of the Taurus (PyQt) library with the purpose
+of managing all TANGO related services (Archiving, Alarms, TANGO Db, Hosts) from a single
+application.
+
+[image:vacca_tree.jpg]
+
+---
+
+Fandango documentation
+----------------------
+
+https://pythonhosted.org/fandango
+
+[image:fandango_docs.jpg]
+
+=======
