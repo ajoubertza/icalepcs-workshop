@@ -753,6 +753,6 @@ Fandango documentation
 
 https://pythonhosted.org/fandango
 
-.center[![docs](images/fandango_docs.jpg)]
+.center[![docs](images/fandango_docs.png)]
 
 =======
