@@ -539,6 +539,7 @@ ICALEPCS 2019 - New York
 ICALEPCS 2019 - New York
 
 ---
+name: whatis
 class: middle
 layout: true
 
@@ -546,16 +547,18 @@ What is Fandango?
 =================
 
 ---
+class: middle
 
-* a Python library:  ```pip install fandango```
+* a Python library:  pip install fandango
 
-* and a shell script: ```fandango read_attribute test/dyn/1/t```
+* and a shell script: fandango read_attribute test/dyn/1/t
 
 * https://github.com/tango-controls/fandango
 
 * uses PyTango and DatabaseDS and Starter Device Servers
 
 ---
+class: middle
 
 It originated from 2 motivations:
 
@@ -564,23 +567,25 @@ It originated from 2 motivations:
 * the desire to get completely rid of Java applications (Jive and Astor)
 
 ---
+class: middle
 
 It provides many features:
 
 * the origin, functional programming for tango (fun4tango)
 
-* + features from Java clients (Jive, Astor)
+* features from Java clients (Jive, Astor)
 
-* + utilities for python devices (Logging, Threading, Workers)
+* utilities for python devices (Logging, Threading, Workers)
 
-* + includes methods for functional programming
+* includes methods for functional programming
 
-* + enables middle-layer devices (DynamicDS, SimulatorDS, CopyCatDS)
+* enables middle-layer devices (DynamicDS, SimulatorDS, CopyCatDS)
 
 ---
 name: empty2
 layout: true
 class: middle
+
 ---
 
 fandango submodules
@@ -695,7 +700,11 @@ astor.start_servers('DynamicDS/1',host=host)
 astor.set_server_level('DynamicDS/1',level=3,host=host)
 ```
 
-----
+---
+
+.center[![vacca](images/jive_add_device.png)]
+
+---
 
 methods from fandango can  also be launched linux shell:
 
@@ -748,25 +757,36 @@ fandango.get_matching_device_properties('sr12/vc/eps-plc-01','dynamic*')
 
 ---
 
-Plenty of useful methods
-```python
-$ fandango --list
-
-
-
-
-```
-
----
 
 ```bash
-$ fandango find_devices "test/*"
+$ fandango -l find_devices "bl00/*"
+
+bl00/ct/alarms
+bl00/ct/ccdalarms-01
+bl00/ct/eps-plc-01
+bl00/ct/eps-plc-01-mbus
+bl00/door/01
+bl00/door/02
+bl00/door/03
+bl00/eh/ccg-fcv-01
+bl00/eh/diset-01-ccd
+bl00/eh/diset-01-iba
+bl00/eh/diset-02-ccd
+bl00/eh/diset-02-iba
+bl00/eh/fcv-01
+bl00/eh/ip-diset-01
+bl00/eh/ip-diset-02
+bl00/eh/ip-ip100-01
 ```
 
 ---
 layout: true
 Import/Export Device servers from TANGO Db
 ------------------------------------------
+
+---
+
+.center[![vacca](images/vacca_tree.png)]
 
 ---
 
@@ -858,6 +878,10 @@ MaxPressure=DevDouble(max(CCGPressures))
 
 ---
 
+.center[![vacca](images/jive_attributes.png)]
+
+---
+
 Declaring a formula in the PANIC Alarm System (using fandango.TangoEval):
 ```python
 
@@ -892,18 +916,52 @@ Libraries/Projects using fandango
 * PyTangoArchiving
 * PyPLC Device Server
 * VacuumController Device Servers (Varian, Agilent, MKS, Pfeiffer)
-* VACCA
+* VACCA User Interface
 
 ---
+layout: true
+name: empty
+class: middle
+---
+class: middle
 
 Fandango and VACCA
 ------------------
+
+.center[![vacca](images/vacca_tree.png)]
 
 VACCA is an SCADA-like UI build on top of the Taurus (PyQt) library with the purpose
 of managing all TANGO related services (Archiving, Alarms, TANGO Db, Hosts) from a single
 application.
 
-.center[![vacca](images/vacca_tree.png)]
+---
+class: middle
+
+Plenty of useful methods:
+
+```python
+$ fandango --list
+
+...
+fandango.tango.methods.check_attribute
+fandango.tango.methods.check_attribute_cached
+fandango.tango.methods.check_attribute_events
+fandango.tango.methods.check_device
+fandango.tango.methods.check_device_cached
+fandango.tango.methods.check_device_events
+fandango.tango.methods.check_device_list
+fandango.tango.methods.check_host
+fandango.tango.methods.check_property_extensions
+fandango.tango.methods.check_starter
+fandango.tango.methods.delete_device
+fandango.tango.methods.device_command
+fandango.tango.methods.get_alias_dict
+fandango.tango.methods.get_alias_for_device
+fandango.tango.methods.get_attr_name
+fandango.tango.methods.get_attribute_config
+fandango.tango.methods.get_attribute_events
+...
+```
 
 ---
 
@@ -930,7 +988,7 @@ Which is currently blocked by:
 Two ports to python 3 actually exist (one by me and another from S2Innovation),
 but none of them has been yet put in production.
 
-=======
+---
 
 layout: true
 
@@ -953,4 +1011,3 @@ root@taurus-test:~# fandango put_device_property tango/admin/$HOSTNAME StartDSPa
 StartDSPath /root/fandango/devices
 root@taurus-test:~# /usr/lib/tango/Starter taurus-test &
 ```
----
