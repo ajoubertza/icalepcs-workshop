@@ -674,6 +674,21 @@ PyTango development
 ---
 class: middle
 
+PyTango versions
+----------------
+
+`pip install pytango != apt get-install python-tango`
+
+- PyPI has the latest
+  - but binding extension not compiled for Linux
+  - binding is compiled and statically linked for Windows
+- Linux packages
+  - The binding is already compiled code, so quick to install.
+  - Typically a few versions behind.
+
+---
+class: middle
+
 Done!  Any questions?
 ---------------------
 
