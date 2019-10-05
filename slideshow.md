@@ -58,6 +58,8 @@ What is PyTango?
 
 * Works on python 2.7, 3.5, 3.6, 3.7
 
+.center[<img src="images/pytango_sw_stack.png" width="400">]
+
 ---
 
 ... plus some extras:
