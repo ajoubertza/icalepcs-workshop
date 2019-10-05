@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-
+import enum
 import random
 from time import sleep
 from tango.server import Device, attribute, command
+
+
+class TrackingMode(enum.IntEnum):
+    INDEPENDENT = 0  # must start at zero!
+    SYNCED = 1  # and increment by 1
 
 
 class PowerSupply(Device):
@@ -21,6 +26,10 @@ class PowerSupply(Device):
         rel_change=1e-3)
     def random(self):
         return random.random()
+
+    @attribute(dtype=TrackingMode)
+    def output_tracking(self):
+        return TrackingMode.SYNCED
 
 
 if __name__ == '__main__':

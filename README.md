@@ -1,4 +1,4 @@
-## PyTango workshop
+## PyTango & Fandango workshop
 
 A presentation for the PyTango & Fandango workshop at ICALEPCS 2019.
 

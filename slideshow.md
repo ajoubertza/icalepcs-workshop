@@ -8,7 +8,7 @@ class: center, middle
 PyTango and Fandango Workshop
 =============================
 
-[Anton Joubert](https://github.com/ajoubertza) - [Sergi Rubio Manrique](https://github.com/sergirubio)
+[Anton Joubert](https://github.com/ajoubertza) ([SARAO](https://sarao.ac.za)) - [Sergi Rubio Manrique](https://github.com/sergirubio) ([ALBA](https://www.cells.es))
 
 ICALEPCS 2019 - New York
 
@@ -28,7 +28,7 @@ Acknowledgements
 
 ---
 
-Much of the content of this presentation is from work by:
+Some of the content of this presentation is from work by:
 
 * [Vincent Michel](https://github.com/vxgmichel)
 * [Tiago Coutinho](https://github.com/tiagocoutinho)
@@ -48,15 +48,15 @@ What is PyTango?
 
 * Python library
 
-* Binding over the C++ tango libray
+* Binding over the C++ tango library
 
-* ... using boost-python
+* ... using boost-python (future:  pybind11)
 
 * relies on numpy
 
-* Multi OS: Linux, Windows, Mac
+* Multi OS: Linux, Windows, Mac (with Docker...)
 
-* Works on python 2.7 .. 3.7
+* Works on python 2.7, 3.5, 3.6, 3.7
 
 ---
 
@@ -68,7 +68,7 @@ What is PyTango?
 
 * ITango (a separate project)
 
-* ?? alternative TANGO Database server (sqlite, redis backends) ??
+* Experimental TANGO Database server (sqlite backend)
 
 ---
 
@@ -80,8 +80,6 @@ What's on the menu?
 ===================
 
 ---
-
-* A fresh python3 tango install using conda
 
 * ITango, a powerful client interface
 
@@ -95,92 +93,10 @@ What's on the menu?
 
 ---
 
-class: middle
-layout: true
-
-Playing with
-============
-
----
-
-.center[![conda](images/conda_logo.svg)]
-
-### Conda is both:
-
-* an open source package management system
-
-* an environment management system
-
-* it runs on Windows, macOS and Linux
-
----
-
-class: middle
-layout: true
-
-Playing with conda
-==================
-
----
-
 ### Requirements for this workshop:
 
-* A 64 bits linux machine
-
-* An internet connection
-
-* A Tango database accessible (optional)
-
-* No sudo access is required
-
----
-
-### Installing miniconda:
-
-``` bash
-# Download the latest miniconda
-$ wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-[...]
-
-# Extract to a local directory (~/miniconda3)
-$ bash Miniconda3-latest-Linux-x86_64.sh -b # No manual intervention
-[...]
-
-# Activate the conda environment
-$ source ~/miniconda3/bin/activate
-
-# Test python
-(root) $ python
-Python 3.6.2 |Anaconda, Inc.| (default, Sep 30 2017, 18:42:57)
-[...]
-```
-
-`(root)` indicates we the main conda environment activated
-
----
-
-### Creating a tango environment
-
-``` bash
-# Conda information
-(root) $ conda info
-[...]
-
-# Create a python3 + tango envrionment
-(root) $ conda create --name tango3 --channel tango-controls itango python=3
-[...]
-
-# Activate the tango3 environment
-(root) $ source activate tango3
-
-# Test itango
-(tango3) $ itango
-ITango 9.2.2 -- An interactive Tango client.
-Running on top of Python 3.6.2, IPython 6.1 and PyTango 9.2.2
-[...]
-```
-
-Checkout [anaconda.org/tango-controls](https://anaconda.org/tango-controls)
+* TANGO Box VM
+* A tiny bit of Python knowledge
 
 ---
 
@@ -210,32 +126,92 @@ ITango
 * User friendly error handling
 
 ---
-
 ### Hands on
 
 ``` bash
-(tango3) $ conda install jupyter matplotlib
+$ itango
+ITango 9.3 -- An interactive Tango client.
+Running on top of Python 2.7.15, IPython 5.8 and PyTango 9.3
 [...]
-(tango3) $ jupyter notebook
 ```
 
-```ipython
-In [2]: tg_test = TangoTest("sys/tg_test/1")
+```python
+# `Device` is an alias for `tango.DeviceProxy`
+In [1]: dev = Device("sys/tg_test/1")
+
+# or can use class name (limits <tab> search space)
+In [2]: dev = TangoTest("sys/tg_test/1")
+
+# is the device running?
+In [3]: dev.ping()
+API_DeviceNotExported: Device sys/tg_test/1 is not exported
 [...]
+
+# No!  Start it, and try again...
+In [4]: dev.ping()
+Out[4]: 1771
 
 ```
 
 ---
 
-### Plan B:
+```python
+# send a command (hard way)
+In [5]: dev.command_inout('DevShort', 1234)
+Out[5]: 1234
 
-<a href="https://asciinema.org/a/0qfbv42rw496b942ny6lpdxrn">
-   <img src="https://asciinema.org/a/0qfbv42rw496b942ny6lpdxrn.png"
-   	style="display:block; margin:auto; width: 640px;"/>
-</a>
+# send a command (easy way - PyTango feature)
+In [6]: dev.DevShort(1235)
+Out[6]: 1235
+
+# read an attribute
+In [7]: dev.long_spectrum
+Out[7]:
+array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+[...]
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=int32)
+
+# write to it
+In [8]: dev.long_spectrum = (1, 2, 3, 4)
+
+In [9]: dev.long_spectrum
+Out[9]: array([1, 2, 3, 4], dtype=int32)
+```
 
 ---
 
+Built-in event monitor - magic `mon` command
+
+```python
+In [11]: dev.poll_attribute('State', 1000)
+
+In [10]: mon -a sys/tg_test/1/State
+'sys/tg_test/1/State' is now being monitored. Type 'mon' to see all events
+
+In [7]: dev.SwitchStates()
+
+In [9]: mon
+ID   Device              Attribute    Value       Quality    Time            
+---- ------------------- ------------ ----------- ---------- ---------------
+   0 sys/tg_test/1       state        RUNNING    ATTR_VALID  16:52:28.564090
+   1 sys/tg_test/1       state        RUNNING    ATTR_VALID  16:52:29.564329
+   2 sys/tg_test/1       state        FAULT      ATTR_VALID  16:52:41.564279
+
+In [10]: mon -d sys/tg_test/1/State
+Stopped monitoring 'sys/tg_test/1/State'
+
+```
+
+Run `mon?` for more info
+
+---
+
+### End of ITango demo
+
+* Lots more info on this page:  [pythonhosted.org/itango](https://pythonhosted.org/itango/)
+* And don't forget it can be used from a Jupyter notebook
+
+---
 name: Server
 layout: true
 class: middle
@@ -264,6 +240,15 @@ class PowerSupply(Device):
 if __name__ == '__main__':
     PowerSupply.run_server()
 ```
+See file:  `examples/ps0.py`
+
+`$ git clone https://github.com/ajoubertza/icalepcs-workshop.git`
+
+???
+
+Instead of `Device`, could use `Device_4Impl` or ``Device_5Impl`,
+but `Device` preferred as it will always use the latest version.
+
 ---
 
 layout: true
@@ -276,26 +261,34 @@ class: middle
 ### Server:
 
 ```bash
-$ python -m tango.test_context ps0.PowerSupply --host $(hostname)
+$ python -m tango.test_context ps0.PowerSupply --host 127.0.0.1
 Ready to accept request
 PowerSupply started on port 8888 with properties {}
-Device access: tango://yourhostname:8888/test/nodb/powersupply#dbase=no
-Server access: tango://yourhostname:8888/dserver/PowerSupply/powersupply#dbase=no
+Device access: tango://127.0.0.1:8888/test/nodb/powersupply#dbase=no
+Server access: tango://127.0.0.1:8888/dserver/PowerSupply/powersupply#dbase=no
 ```
 
 ### Client:
 
-```bash
-$ itango
-ITango 9.2.2 -- An interactive Tango client.
+```python
+$ ipython
 
-In [1]: d = Device('tango://yourhostname:8888/test/nodb/powersupply#dbase=no')
+In [1]: import tango
 
-In [2]: d.calibrate()
+In [2]: d = tango.DeviceProxy('tango://127.0.0.1:8888/test/nodb/powersupply#dbase=no')
 
-In [3]: d.voltage
-Out[3]: 1.23
+In [3]: d.calibrate()
+
+In [4]: d.voltage
+Out[4]: 1.23
 ```
+
+???
+**NOTE:** For events to work with `test_context`, use IP address, not hostname
+
+`$ python -m tango.test_context --help`
+
+For debugging, add `--debug 5`
 
 ---
 class: middle
@@ -303,8 +296,7 @@ class: middle
 Let's try out events!
 ---------------------
 
-Adding a polled attribute:
-
+Adding a polled attribute - see file:  `examples/ps0b.py`
 ```python
 import random
 
@@ -317,19 +309,88 @@ import random
     def random(self):
         return random.random()
 ```
-
-Going back to ITango:
+Going back to ipython:
 
 ```python
-In [4]: cb = tango.utils.EventCallback()
+In [5]: cb = tango.utils.EventCallback()
 
-In [5]: eid = d.subscribe_event('random', tango.EventType.CHANGE_EVENT, cb)
+In [6]: eid = d.subscribe_event('random', tango.EventType.CHANGE_EVENT, cb)
 
-2017-10-07 11:35:17.456138 TEST/NODB/POWERSUPPLY RANDOM#DBASE=NO CHANGE
-... [ATTR_VALID] 0.9369674083770559
+2019-09-30 19:06:35.036704 TEST/NODB/POWERSUPPLY RANDOM#DBASE=NO CHANGE
+... [ATTR_VALID] 0.34364164896885574
+
+In [7]: d.unsubscribe_event(eid)
 ```
 
+???
+Pity it crashes after about 10 sec!
+
+Works fine on PyTango 9.2.5 with cppTango 9.2.5
+Not with 9.3.x
+
 ---
+class: middle
+
+Enumerated types
+----------------
+
+Add an enumerated type - see file:  `examples/ps0c.py`
+
+```python
+import enum
+[...]
+
+class TrackingMode(enum.IntEnum):
+    INDEPENDENT = 0  # must start at zero!
+    SYNCED = 1  # and increment by 1
+
+[...]
+
+    @attribute(dtype=TrackingMode)
+    def output_tracking(self):
+        return TrackingMode.SYNCED
+```
+
+```python
+In [8]: tracking = d.output_tracking                                                                                       
+
+In [9]: tracking                                                                                                           
+Out[9]: <output_tracking.SYNCED: 1>
+
+# matching enum object created on client side
+In [10]: type(tracking)                                                                                                     
+Out[10]: <enum 'output_tracking'>
+
+In [11]: tracking == tracking.INDEPENDENT                                                                                      
+Out[11]: False
+```
+
+???
+Example is for a dual-output power supply.  They often have the
+option of forcing the two outputs to be the same.  I.e., they are
+sychronised.
+
+No need to specify labels.
+Old syntax: `@attribute(dtype='DevEnum', enum_labels=['A', 'B', 'C'])`
+Code is more readable with Python enum objects.
+
+Warnigs:
+- The `DeviceProxy` maintains a cache of the attributes, which includes the
+enumeration class. If the device server changes the enum_labels for an
+attribute that the `DeviceProxy` has already cached, then the DeviceProx
+will not know about it. A new instance of the `DeviceProxy` will have to be
+created after any significant interface change on the server.
+- If a server has enum labels that are not valid Python identifiers it
+will cause problems. Leading spaces will break all attribute access for
+the `DeviceProxy`. Other invalid labels can be accessed in the IntEnum class
+via item lookup, e.g. `proxy.my_enum['has a bad name!']` will work, while
+`proxy.my_enum.has a bad name!` obviously won't.
+
+For more example usage see `ClockDS.py` and `client.py`, here:
+https://github.com/tango-controls/pytango/tree/develop/examples/Clock
+
+---
+
 class: middle
 
 Unit testing
@@ -339,21 +400,95 @@ Unit testing
 from tango import DevState
 from tango.test_utils import DeviceTestContext
 
-from powersupply.powersupply import PowerSupply
+from ps0 import PowerSupply
 
 
-def test_init():
-    """Test device goes into STANDBY when initialised"""
-    with DeviceTestContext(PowerSupply) as proxy:
-        proxy.Init()
-        assert proxy.state() == DevState.STANDBY
+def test_calibrate():
+    """Test device voltage reading after calibration."""
+    with DeviceTestContext(PowerSupply, process=True) as proxy:
+        proxy.calibrate()
+        assert proxy.voltage == 1.23
 ```
+See file:  `example/test_ps0.py`
 
 `DeviceTestContext` launches tango device server in a subprocess,
-and returns a `DeviceProxy` instance connected to it.
+and returns a `DeviceProxy` instance connected to it. No DB, so
+limited functionality.
 
 "Sort-of" unit testing - can test from client's perspective, but
 cannot access device's methods or attributes directly.
+
+???
+
+It uses "nodb" mode, but properties can be provided via `properties={}` kwarg.
+Set it to a dict of key-value pairs.  A temporary file is created
+that is passed to the device server on the command line.
+
+More info:  https://tango-controls.readthedocs.io/en/latest/administration/deployment/without-sql-db.html
+
+---
+class: middle
+
+Unit testing
+------------
+
+Events are tricky - may need to provide port number too
+
+```python
+[...]
+
+def test_events():
+    results = []
+
+    def callback(evt):
+        if not evt.err:
+            results.append(evt)
+
+    port = get_open_port()  # utility function
+    with DeviceTestContext(PowerSupply, process=True, port=port) as proxy:
+        eid = proxy.subscribe_event("random", EventType.CHANGE_EVENT, callback, wait=True)
+        # wait for events to happen
+        time.sleep(2)
+        assert len(results) > 1
+        proxy.unsubscribe_event(eid)
+```
+See file:  `example/test_ps0b.py`
+
+---
+class: middle
+
+Unit testing
+------------
+
+```bash
+# Once-off, install a test runner
+$ pip install pytest
+
+# run the test
+$ # pytest -v test_ps0b.py
+============================= test session starts ============================
+[...]                                                                          
+
+test_ps0b.py::test_calibrate PASSED                                     [ 50%]
+test_ps0b.py::test_events PASSED                                        [100%]
+
+============================== 2 passed in 2.58s =============================
+```
+
+---
+class: middle
+
+Unit testing
+------------
+
+`DeviceTestContext(..., process=False)` is the default
+
+If starting device more than once, probably get segmentation fault.
+
+Options:
+* `DeviceTestContext(..., process=True)`
+* nosetest can use `nose_xunitmp` plugin: `--with-xunitmp`
+* pytest can use `pytest-forked` plugin:  `--forked`
 
 ---
 class: middle
@@ -365,38 +500,13 @@ Asynchronous pytango
 
 [pytango.readthedocs.io/en/stable/green_modes/green.html](http://pytango.readthedocs.io/en/stable/green_modes/green.html)
 
----
-class: middle
-
-Gevent client mode example
--------------------------
-
-``` bash
-# Install gevent
-$ conda install gevent
-[...]
-
-# Run python
-$ python
+```python
+tango.GreenMode.Synchronous  # default
+tango.GreenMode.Futures
+tango.GreenMode.Gevent
+tango.GreenMode.Asyncio
 ```
 
-``` python
->>> # Import from tango.gevent
->>> from tango.gevent import DeviceProxy
-
->>> # Create proxy (uses gevent)
->>> dev = DeviceProxy("sys/tg_test/1")
-
->>> # Read the state asynchronously
->>> result = dev.state(wait=False)
->>> result
-<gevent.event.AsyncResult at 0x1a74050>
-
->>> # Wait for the result
->>> state = result.get()
->>> print(state)
-RUNNING
-```
 ---
 class: middle
 
@@ -405,7 +515,7 @@ Asyncio client mode example
 
 ```bash
 # Install an asyncio console
-$ pip install aioconsole
+$ pip3 install aioconsole
 [...]
 
 # Run apython
@@ -472,7 +582,7 @@ More resources
 - Repo: [github.com/vxgmichel/asyncio-overview](https://github.com/vxgmichel/asyncio-overview)
 
 
-### Previous pytango workshop
+### Previous PyTango workshop (notes on concurrency)
 
 ICALECPS 2017
 - Slides: [vxgmichel.github.io/icalepcs-workshop](https://vxgmichel.github.io/icalepcs-workshop)
@@ -483,30 +593,39 @@ ICALECPS 2017
 class: middle
 ## New features being considered
 
-* Python logging as standard sends to TANGO Logging Service
+#### 1. Python logging as standard, sends to TANGO Logging Service (bringing in feature from fandango)
+
+Option 1 - *Opt-in*:  mixin adds `init_logging` method and `_logger` object
 
 ```python
+    class PowerSupply(Device, LoggerMixin):
 
-class PowerSupply(Device):
+        @command
+        def calibrate(self):
+            self._logger.info('Calibrating...')
+```
 
-    @command
-    def calibrate(self):
-        self._logger.info('Calibrating...')
-        sleep(0.1)
+Option 2 - *Opt-out*:  part of `Device`, disable via overriding `init_logging`
+
+```python
+    class PowerSupply(Device):
+    [...]
+            self._logger.info('Calibrating...')
 
 ```
 
-* User could add handlers for other targets, e.g., syslog or Elastic
+User could add/remove handlers, e.g., syslog or Elastic instead of TLS.
 
 ---
 class: middle
 
-New features being considered
------------------------------
+## New features being considered
 
-* Support forwarded attributes with `DeviceTestContext`
+#### 2. Support forwarded attributes with `DeviceTestContext`
 
-* faketango `Device` for basic unit testing:
+Currently problem with missing root attribute
+
+#### 3. `faketango.Device` for basic unit testing:
 
 ```python
 import mock
@@ -523,6 +642,38 @@ def test_init():
     DUT.Init()
     assert DUT.get_state() == DevState.STANDBY
 ```
+
+(This may be difficult, and have limitations - polling, events, green modes, ...)
+
+---
+class: middle
+
+PyTango development
+-------------------
+
+### Hosting
+
+- Repo: [github.com/tango-controls/pytango](https://github.com/tango-controls/pytango)
+- Docs: [pytango.readthedocs.io](https://pytango.readthedocs.io)
+- Continuous Integration:  TravisCI, using Conda, Py 2.7, 3.5, 3.6, 3.7
+- Windows packages:  AppVeyor (TODO: dedicated `tango-controls` user)
+
+### Issues
+
+- Specific issues:  report on [GitHub](https://github.com/tango-controls/pytango/issues) - the more detail the better
+- Questions:  use the [TANGO Forum](https://www.tango-controls.org/community/forum/c/development/python)
+
+### Contributing
+
+- Typical branched Git workflow.  Main branch is `develop`
+- Fork the repo, make it better, make a PR.  Thanks!
+- More info in [how-to-contribute](https://pytango.readthedocs.io/en/latest/how-to-contribute.html).
+
+---
+class: middle
+
+Done!  Any questions?
+---------------------
 
 ---
 name: presentation
