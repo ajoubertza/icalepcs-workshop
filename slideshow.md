@@ -677,7 +677,7 @@ class: middle
 PyTango versions
 ----------------
 
-`pip install pytango != apt get-install python-tango`
+`pip install pytango != apt-get install python-tango`
 
 - PyPI has the latest
   - but binding extension not compiled for Linux
